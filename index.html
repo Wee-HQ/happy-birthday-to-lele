@@ -3,52 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>宝贝乐乐生日快乐</title>
+    <title>宝贝乐乐生日快乐 - Gatsby Edition</title>
     <style>
         /* ================= 基础样式与背景 ================= */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
-            font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #050914; /* 备用底色 */
+            font-family: 'Georgia', 'Microsoft YaHei', serif;
+            background-color: #0a0a0a;
         }
 
-        /* 深蓝星空渐变背景 */
         #bg-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            /* 替换CSS背景图示例：background-image: url('https://your-image-url.jpg'); */
-            background: radial-gradient(circle at center, #1b2735 0%, #050914 100%);
+            background: radial-gradient(circle at center, #2a2015 0%, #050505 80%, #000000 100%);
+            transition: background 1s ease;
         }
 
         /* ================= 密码锁界面 ================= */
         #login-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 9, 20, 0.85); backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; color: white; transition: opacity 1s ease;
+            z-index: 100; color: #D4AF37; transition: opacity 1s ease;
         }
-        #login-screen h1 { font-size: 2.5rem; color: #ff9a9e; text-shadow: 0 0 15px rgba(255,154,158,0.6); margin-bottom: 30px;}
-        .input-group { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #login-screen h1 { 
+            font-size: 3rem; color: #FFD700; text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); 
+            margin-bottom: 30px; font-weight: normal; letter-spacing: 5px;
+            border-bottom: 2px solid #D4AF37; padding-bottom: 10px; text-align: center;
+        }
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         #pwd-input {
-            padding: 15px 20px; font-size: 1.5rem; text-align: center; border-radius: 30px;
-            border: 2px solid #ff9a9e; background: rgba(255,255,255,0.1); color: white;
-            outline: none; letter-spacing: 5px; width: 150px;
+            padding: 15px 20px; font-size: 1.8rem; text-align: center; border-radius: 5px;
+            border: 2px solid #D4AF37; background: rgba(0,0,0,0.5); color: #FFD700;
+            outline: none; letter-spacing: 15px; width: 180px; font-family: monospace;
         }
         #btn-unlock {
-            padding: 12px 40px; font-size: 1.2rem; border-radius: 30px; border: none;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            color: #d81b60; font-weight: bold; cursor: pointer; transition: transform 0.2s;
-            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+            padding: 15px 50px; font-size: 1.2rem; border-radius: 5px; border: 1px solid #FFD700;
+            background: linear-gradient(135deg, #3a2c15 0%, #1a140a 100%);
+            color: #FFD700; font-weight: bold; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 2px;
         }
+        #btn-unlock:hover { background: #D4AF37; color: #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
         #btn-unlock:active { transform: scale(0.95); }
         #error-msg { color: #ff4d4d; font-size: 1rem; min-height: 20px; opacity: 0; transition: opacity 0.3s;}
 
         /* ================= 3D 容器 ================= */
         #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;}
 
-        /* CSS2D 标签样式 (蜡烛编号) */
         .candle-label {
-            color: #fff; font-size: 14px; font-weight: bold; text-shadow: 0 0 4px #000;
-            pointer-events: none; margin-top: 15px;
+            color: #FFD700; font-size: 14px; font-weight: bold; text-shadow: 0 0 5px #000;
+            pointer-events: none; margin-top: 15px; font-family: 'Georgia', serif; transition: opacity 0.5s;
         }
 
         /* ================= UI 界面 ================= */
@@ -57,564 +60,857 @@
             pointer-events: none; display: none;
         }
         
-        /* 吹气按钮 */
-        #blow-btn {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            padding: 15px 30px; font-size: 1.2rem; border-radius: 50px; border: none;
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            color: white; font-weight: bold; cursor: pointer; pointer-events: auto;
-            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4); transition: all 0.3s;
-            display: flex; align-items: center; gap: 10px;
+        .instruction { 
+            position: absolute; top: 20px; width: 100%; text-align: center; 
+            color: #D4AF37; font-size: 1rem; pointer-events: none; 
+            text-shadow: 0 2px 4px #000; letter-spacing: 1px; line-height: 1.5;
         }
-        #blow-btn:hover { box-shadow: 0 8px 25px rgba(0, 242, 254, 0.6); transform: translateX(-50%) scale(1.05); }
-        
-        /* 音乐控制按钮 */
+
         #music-btn {
             position: absolute; bottom: 40px; right: 40px; width: 50px; height: 50px;
-            border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.3);
-            color: white; font-size: 1.5rem; cursor: pointer; pointer-events: auto;
-            backdrop-filter: blur(5px); transition: all 0.3s; display: flex;
-            justify-content: center; align-items: center;
+            border-radius: 50%; border: 1px solid #D4AF37; background: rgba(0,0,0,0.5);
+            color: #FFD700; font-size: 1.2rem; cursor: pointer; pointer-events: auto;
+            display: flex; justify-content: center; align-items: center; transition: all 0.3s;
         }
-        #music-btn.playing { border-color: #ff9a9e; color: #ff9a9e; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(255,154,158,0.4);} 70% {box-shadow: 0 0 0 15px rgba(255,154,158,0);} 100% {box-shadow: 0 0 0 0 rgba(255,154,158,0);} }
+        #music-btn.playing { box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
 
-        /* Toast 提示框 */
         #toast {
             position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255, 154, 158, 0.9); backdrop-filter: blur(10px);
-            color: #fff; padding: 15px 30px; border-radius: 20px; font-size: 1.2rem;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, rgba(40,30,15,0.95), rgba(10,10,10,0.95)); 
+            border: 1px solid #D4AF37; color: #FFD700; padding: 15px 40px; border-radius: 5px; 
+            font-size: 1.2rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             opacity: 0; pointer-events: none; transition: opacity 0.5s, top 0.5s;
-            max-width: 80%; line-height: 1.5; font-weight: bold;
+            max-width: 80%; line-height: 1.5; font-weight: normal; letter-spacing: 1px; z-index: 50;
         }
 
-        /* 提示用户文字 */
-        .instruction { position: absolute; top: 30px; width: 100%; text-align: center; color: rgba(255,255,255,0.7); font-size: 1rem; pointer-events: none; }
+        /* ================= 回忆照片展示框 ================= */
+        #photo-viewer {
+            position: absolute; top: 45%; left: 50%; 
+            width: 290px; height: 460px; 
+            background: #111; border: 8px solid #D4AF37; border-radius: 10px;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0), inset 0 0 20px #000;
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            overflow: hidden; pointer-events: none; z-index: 40;
+            
+            transform: translate(-50%, -50%) scale(0.3) rotate(-15deg);
+            opacity: 0;
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #photo-viewer.active {
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            opacity: 1;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.8), inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        .photo-text {
+            color: #FFD700; font-size: 1.5rem; padding: 20px;
+            text-shadow: 0 2px 5px #000; line-height: 1.6;
+        }
+        .photo-img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
+        }
+
+        /* ================= 点击产生的气球和彩花特效 ================= */
+        .party-item {
+            position: absolute; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); opacity: 1;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            animation: floatPartyItem ease-out forwards;
+        }
+        @keyframes floatPartyItem {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(var(--rot)); opacity: 0; }
+        }
+
+        /* ================= 摄像头与降级UI ================= */
+        #webcam-container {
+            position: absolute; bottom: 120px; right: 30px; width: 160px; height: 120px;
+            border: 2px solid #D4AF37; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); pointer-events: auto;
+            background: #000; display: none;
+        }
+        #webcam-video, #webcam-canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); position: absolute; top:0; left:0;}
+        
+        .cam-status {
+            position: absolute; top: -30px; right: 0; color: #FFD700; font-size: 0.9rem;
+            text-shadow: 0 1px 3px #000; z-index: 60;
+        }
+
+        #fallback-controls {
+            position: absolute; bottom: 40px; left: 40px; display: none; gap: 15px; pointer-events: auto; flex-wrap: wrap; max-width: 300px;
+        }
+        .fallback-btn {
+            padding: 10px 15px; background: rgba(20,15,5,0.8); border: 1px solid #D4AF37;
+            color: #FFD700; cursor: pointer; border-radius: 5px; transition: 0.3s;
+        }
+        .fallback-btn:hover { background: #D4AF37; color: #000; }
+        #btn-photo { display: none; }
+
     </style>
 </head>
 <body>
 
-    <!-- 渐变背景 -->
     <div id="bg-container"></div>
+    <audio id="bg-music" src="https://raw.githubusercontent.com/Wee-HQ/22/main/22.mp3" loop preload="auto"></audio>
 
-    <!-- 音乐播放器 -->
-    <!-- ================= 【替换背景音乐链接的位置】 ================= -->
-    <!-- 下方 src 链接可替换为您喜欢的MP3链接。当前使用的是维基百科免版权生日快乐钢琴曲 -->
-    <audio id="bg-music" src="https://upload.wikimedia.org/wikipedia/commons/3/33/Happy_Birthday_To_You_%28Piano_Version%29.ogg" loop preload="auto"></audio>
-
-    <!-- 密码锁界面 -->
     <div id="login-screen">
-        <h1>🎂 宝贝乐乐生日 🎂</h1>
+        <h1>THE 22ND BIRTHDAY</h1>
         <div class="input-group">
-            <input type="password" id="pwd-input" placeholder="输入密码" maxlength="4" autocomplete="off">
-            <div id="error-msg">密码错误，请重试哦~</div>
-            <button id="btn-unlock">解锁惊喜</button>
+            <input type="password" id="pwd-input" placeholder="CODE" maxlength="4" autocomplete="off">
+            <div id="error-msg">ACCESS DENIED</div>
+            <button id="btn-unlock">Unlock The Night</button>
         </div>
     </div>
 
-    <!-- 3D 场景容器 -->
     <div id="canvas-container"></div>
 
-    <!-- 交互 UI 界面 -->
     <div id="ui-layer">
-        <div class="instruction">滑动屏幕可全方位观看，点击蜡烛许愿</div>
+        <div class="instruction">滑动环视 | 点击任意空白处放烟花气球 | 对麦克风吹气许愿 |还有隐藏彩蛋哦<br>🖐️ 张开：时光漫游 | 🤏 捏合：翻看回忆 | ✊ 握拳：实体复原</div>
+        
+        <div id="photo-viewer">
+            <div class="photo-text" id="p-text">📸 照片</div>
+            <img class="photo-img" id="p-img" src="">
+        </div>
+
         <div id="toast"></div>
-        <button id="blow-btn">
-            🎤 <span>一口气吹灭</span>
-        </button>
-        <button id="music-btn" title="播放/暂停音乐">🔇</button>
+        <button id="music-btn" title="播放/暂停">🔇</button>
+        
+        <div id="webcam-container">
+            <div class="cam-status" id="cam-status">等待摄像头...</div>
+            <video id="webcam-video" autoplay playsinline></video>
+            <canvas id="webcam-canvas"></canvas>
+        </div>
+
+        <div id="fallback-controls">
+            <button class="fallback-btn" id="btn-explode">🖐️ 散开特效</button>
+            <button class="fallback-btn" id="btn-implode">✊ 聚拢实体</button>
+            <button class="fallback-btn" id="btn-photo">🤏 翻看照片</button>
+        </div>
     </div>
 
-    <!-- 引入外部 CDN 依赖 -->
+    <!-- 依赖库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <script>
         // ================= 数据字典 =================
         const CORRECT_PWD = "0508";
         const BLESSINGS = [
-            "亲爱的乐乐，22岁生日快乐！愿你岁岁平安！", "乐乐，新的一岁，愿你被世界温柔以待。", 
-            "乐乐宝贝，愿你的笑容如今天般灿烂！", "22岁，最好的年纪，乐乐冲鸭！", 
-            "愿乐乐每天都能吃好喝好，快乐无烦恼！", "乐乐，我的宝贝，生日快乐，永远爱你！", 
-            "愿乐乐的22岁，有星辰大海，有良人相伴。", "乐乐，愿你所有的心愿都能如愿以偿！", 
-            "22岁的乐乐，要继续闪闪发光哦！", "乐乐，生日快乐！每一天都要甜甜的！", 
-            "愿乐乐的生活充满阳光，好运连连！", "亲爱的乐乐，祝你生日快乐，平安喜乐！", 
-            "乐乐，愿你遍历山河，觉得人间值得。", "22岁啦，乐乐要做一个无忧无虑的大人！", 
-            "乐乐，愿你的未来如星空般璀璨夺目。", "祝我的乐乐生日快乐，心想事成！", 
-            "乐乐，愿你所得皆所期，所求皆如愿。", "22岁，新起点，乐乐宝贝勇往直前！", 
-            "乐乐，愿你的每一天都充满惊喜和感动。", "亲爱的乐乐，愿你永远像个孩子般快乐。", 
-            "乐乐，生日快乐！我会一直陪在你身边。", "22根蜡烛，22个心愿，乐乐一定会幸福！"
+            "亲爱的乐乐，22岁生日快乐！宝贝岁岁平安！", "乐乐宝贝，生日快乐我爱你。", 
+            "乐乐宝贝，希望你看到这个网址很开心！", "好好上学生活单纯没烦恼~~", 
+            "愿宝贝每天都能吃好喝好，快乐无烦恼！", "乐乐宝贝，生日快乐，永远爱你！", 
+            "愿乐乐的22岁天天开心。", "乐乐所有的心愿都能如愿以偿！", 
+            "22岁的乐乐，要更爱妞妞哦！", "乐乐宝贝，生日快乐！！！！！", 
+            "我勒个，想不出祝福了", "亲爱的宝贝，祝你生日快乐，平安喜乐！", 
+            "谁想到要写这么多祝福的??哦是妞妞小天才", "22岁啦~~~乐乐要变瘦瘦一起去和妞妞去汤山", 
+            "乐乐，我爱你爱着你~就像美女爱money~又押上了。", "宝贝猜猜礼物是什么哦~", 
+            "礼物和宝贝喜欢的娱乐活动有关哦", "礼物是什么就不告诉你嘿嘿", 
+            "乐乐我滴宝，每天每天都吃饱~", "亲爱的乐乐，愿你永远像妞妞的孩子般快乐~", 
+            "乐乐，生日快乐！妞妞会一直陪在你身边。", "22根蜡烛，22个心愿，乐乐和妞妞一定会更幸福~"
         ];
 
-        // ================= 基础逻辑控制 =================
-        const loginScreen = document.getElementById('login-screen');
-        const pwdInput = document.getElementById('pwd-input');
-        const btnUnlock = document.getElementById('btn-unlock');
-        const errorMsg = document.getElementById('error-msg');
-        const uiLayer = document.getElementById('ui-layer');
-        const blowBtn = document.getElementById('blow-btn');
-        const musicBtn = document.getElementById('music-btn');
+        // 扩充到 13 张照片
+        const photoList = [
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8234.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8235.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8237.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8238.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8240.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8241.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8243.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8245.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8247.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8248.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8249.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8251.JPG",
+            "https://raw.githubusercontent.com/Wee-HQ/p1/main/IMG_8253.JPG"
+        ];
+
+        // ================= 全局状态 =================
+        let scene, camera, renderer, labelRenderer, controls;
+        let candles = [], smokeParticles = [];
+        let isBlowing = false;
+        const clock = new THREE.Clock();
+
+        let cakeMaterials = [];
+        let targetCakeOpacity = 1.0;
+        let currentCakeOpacity = 1.0;
+
+        let magicParticles;
+        let particleData = [];
+        let isExploded = false;
+
+        let currentPhotoIndex = 0;
+        let pinchTimer = 0;
+
+        // 隐藏彩蛋逻辑相关变量
+        let manuallyExtinguishedCount = 0;
+        let easterEggGroup = null;
+        let pixelParticles = [];
+
+        // 音频识别（吹气）变量
+        let audioContext, analyser, microphone, dataArray;
+        let blowStartTime = 0;
+
         const toastEl = document.getElementById('toast');
         const audio = document.getElementById('bg-music');
 
-        // 密码解锁与音乐自动播放逻辑
-        let isPlaying = false;
-        btnUnlock.addEventListener('click', () => {
+        // ================= 登录解锁 =================
+        document.getElementById('btn-unlock').addEventListener('click', () => {
+            const pwdInput = document.getElementById('pwd-input');
             if(pwdInput.value === CORRECT_PWD) {
-                // 解锁成功
-                loginScreen.style.opacity = '0';
+                document.getElementById('login-screen').style.opacity = '0';
                 
-                // 【修复音乐问题】 在用户点击事件中立即执行 play()
                 audio.play().then(() => {
-                    isPlaying = true;
-                    musicBtn.innerHTML = '🎵';
-                    musicBtn.classList.add('playing');
-                }).catch(e => {
-                    console.log("自动播放仍然被阻止，需用户手动点击:", e);
-                    musicBtn.innerHTML = '🔇';
-                });
+                    document.getElementById('music-btn').innerHTML = '🎵';
+                    document.getElementById('music-btn').classList.add('playing');
+                }).catch(e => console.log("需手动播放"));
 
                 setTimeout(() => {
-                    loginScreen.style.display = 'none';
-                    uiLayer.style.display = 'block';
-                    init3DScene(); // 初始化3D场景
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('ui-layer').style.display = 'block';
+                    init3DScene();
+                    initHandTracking();
+                    initMic(); // 解锁后初始化麦克风（需用户交互后才能创建 AudioContext）
                 }, 1000);
             } else {
-                errorMsg.style.opacity = '1';
-                pwdInput.value = '';
+                const errorMsg = document.getElementById('error-msg');
+                errorMsg.style.opacity = '1'; pwdInput.value = '';
                 setTimeout(() => errorMsg.style.opacity = '0', 2000);
             }
         });
 
-        // 手动音乐控制
-        musicBtn.addEventListener('click', () => {
-            if(isPlaying) { 
-                audio.pause(); 
-                musicBtn.classList.remove('playing'); 
-                musicBtn.innerHTML = '🔇';
-            } else { 
-                audio.play(); 
-                musicBtn.classList.add('playing'); 
-                musicBtn.innerHTML = '🎵';
-            }
-            isPlaying = !isPlaying;
-        });
-
-        // Toast 提示框封装
-        let toastTimeout;
-        function showToast(msg) {
-            toastEl.innerText = msg;
-            toastEl.style.opacity = '1';
-            toastEl.style.top = '25%';
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toastEl.style.opacity = '0';
-                toastEl.style.top = '20%';
-            }, 3000);
-        }
-
-        // ================= 3D 核心逻辑 =================
-        let scene, camera, renderer, labelRenderer, controls;
-        let candles = []; 
-        let smokeParticles = []; 
-        let starParticles; // 3D星星粒子
-        let isBlowing = false;
-        const clock = new THREE.Clock();
-
+        // ================= 3D 核心构建 =================
         function init3DScene() {
             const container = document.getElementById('canvas-container');
 
-            // 1. 场景
             scene = new THREE.Scene();
-            
-            // 2. 相机
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 15, 30);
+            camera.position.set(0, 18, 35);
 
-            // 3. 渲染器 (WebGL)
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            // 4. CSS2D 渲染器 (用于蜡烛编号)
             labelRenderer = new THREE.CSS2DRenderer();
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
             labelRenderer.domElement.style.position = 'absolute';
             labelRenderer.domElement.style.top = '0px';
-            labelRenderer.domElement.style.pointerEvents = 'none'; // 防阻挡点击
+            labelRenderer.domElement.style.pointerEvents = 'none';
             container.appendChild(labelRenderer.domElement);
 
-            // 5. 光照
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
+            scene.add(new THREE.AmbientLight(0x403020, 1.5));
+            const dirLight = new THREE.DirectionalLight(0xffdf80, 1.2);
+            dirLight.position.set(15, 25, 10); dirLight.castShadow = true; scene.add(dirLight);
+            const candleLight = new THREE.PointLight(0xffa500, 2.0, 40);
+            candleLight.position.set(0, 10, 0); scene.add(candleLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
-            dirLight.position.set(15, 25, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 1024;
-            dirLight.shadow.mapSize.height = 1024;
-            scene.add(dirLight);
-
-            const candleLight = new THREE.PointLight(0xffaa00, 1.2, 35);
-            candleLight.position.set(0, 8, 0);
-            scene.add(candleLight);
-
-            // 6. 控制器
             controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2; // 不允许看底盘以下
-            controls.minDistance = 15;
-            controls.maxDistance = 50;
+            controls.enableDamping = true; controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2; 
 
-            // 7. 构建场景元素
-            createStars(); // 浪漫星空粒子
+            createBackgroundDust();
             buildCake();
             buildCandles();
+            initMagicParticles(); 
 
-            // 8. 交互事件
-            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // 绑定全局点击事件（放烟花 + 点蜡烛）
             renderer.domElement.addEventListener('pointerdown', onPointerDown);
 
-            // 9. 启动动画
             animate();
         }
 
-        // 创建3D浪漫星空
-        function createStars() {
-            const starsGeo = new THREE.BufferGeometry();
-            const starsCount = 1000; // 星星数量
-            const posArray = new Float32Array(starsCount * 3);
-            for(let i = 0; i < starsCount * 3; i++) {
-                // 散布在很大的空间中
-                posArray[i] = (Math.random() - 0.5) * 200; 
-            }
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            const starsMat = new THREE.PointsMaterial({
-                size: 0.8,
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending
-            });
-            starParticles = new THREE.Points(starsGeo, starsMat);
-            scene.add(starParticles);
+        function createDecoTexture() {
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#111'; ctx.fillRect(0,0,512,512);
+            ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 8;
+            for(let i=0; i<512; i+=30) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke(); }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(4, 1);
+            return tex;
         }
 
-        // 构建蛋糕模型 (增加照片墙)
         function buildCake() {
             const cakeGroup = new THREE.Group();
 
-            // 材质
-            const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
-            const matPink = new THREE.MeshStandardMaterial({ color: 0xffb6c1, roughness: 0.8 });
-            const matBlue = new THREE.MeshStandardMaterial({ color: 0xadd8e6, roughness: 0.8 });
-            const matStand = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.3, roughness: 0.4 });
-
-            // 展台
-            const standGeo = new THREE.CylinderGeometry(8.5, 9, 0.5, 64);
-            const stand = new THREE.Mesh(standGeo, matStand);
-            stand.position.y = -0.25;
-            stand.receiveShadow = true;
-            cakeGroup.add(stand);
-
-            // 底层 (蓝色)
-            const layer1Radius = 7.5;
-            const layer1Geo = new THREE.CylinderGeometry(layer1Radius, layer1Radius, 3, 64);
-            const layer1 = new THREE.Mesh(layer1Geo, matBlue);
-            layer1.position.y = 1.5;
-            layer1.castShadow = true; layer1.receiveShadow = true;
-            cakeGroup.add(layer1);
-
-            // 中层 (粉色)
-            const layer2Geo = new THREE.CylinderGeometry(5.5, 5.5, 2.5, 64);
-            const layer2 = new THREE.Mesh(layer2Geo, matPink);
-            layer2.position.y = 4.25;
-            layer2.castShadow = true; layer2.receiveShadow = true;
-            cakeGroup.add(layer2);
-
-            // 顶层 (奶油白)
-            const layer3Geo = new THREE.CylinderGeometry(4, 4, 2, 64);
-            const layer3 = new THREE.Mesh(layer3Geo, matWhite);
-            layer3.position.y = 6.5;
-            layer3.castShadow = true; layer3.receiveShadow = true;
-            cakeGroup.add(layer3);
-
-            // ================= 【修改1：在底层侧面贴5张照片】 =================
-            const numPhotos = 5;
-            const photoGeo = new THREE.PlaneGeometry(3, 2.2); // 照片尺寸
-            const frameGeo = new THREE.PlaneGeometry(3.3, 2.5); // 白色相框尺寸
-            const emojis = ['📷', '🎂', '🎈', '🎁', '❤️'];
-
-            for(let i = 0; i < numPhotos; i++) {
-                const angle = i * (Math.PI * 2) / numPhotos;
-                
-                // 1. 创建白色相框底板，使其有一点凸出立体感
-                const frameMat = new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 0.5});
-                const frame = new THREE.Mesh(frameGeo, frameMat);
-                // 贴在底层外壁上 (半径加上0.01防止与蛋糕重叠闪烁)
-                frame.position.set(Math.cos(angle) * (layer1Radius + 0.05), 1.5, Math.sin(angle) * (layer1Radius + 0.05));
-                frame.rotation.y = -angle + Math.PI / 2; // 面向外侧
-                cakeGroup.add(frame);
-
-                // 2. 创建照片内容
-                // 默认使用 Canvas 生成 Emoji 占位图
-                const canvas = document.createElement('canvas');
-                canvas.width = 300; canvas.height = 220;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ffcfcf'; // 浅粉色背景
-                ctx.fillRect(0,0,300,220);
-                ctx.fillStyle = '#d81b60';
-                ctx.font = '80px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(emojis[i], 150, 110);
-                
-                let photoTex = new THREE.CanvasTexture(canvas);
-
-                // ================= 【替换照片的位置】 =================
-                // 想要替换成真实照片，请注释掉上面的 Emoji 逻辑，并把下面这行解除注释，换上你的图片URL：
-                // photoTex = new THREE.TextureLoader().load('https://your-image-url.jpg');
-                // =======================================================
-
-                const photoMat = new THREE.MeshBasicMaterial({map: photoTex});
-                const photo = new THREE.Mesh(photoGeo, photoMat);
-                // 照片比相框再稍微向外凸出一点点
-                photo.position.set(Math.cos(angle) * (layer1Radius + 0.07), 1.5, Math.sin(angle) * (layer1Radius + 0.07));
-                photo.rotation.y = -angle + Math.PI / 2;
-                cakeGroup.add(photo);
-            }
-
-            // 装饰：糖珠 (随机散布在三层顶部)
-            const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
-            const sprinkleGeo = new THREE.SphereGeometry(0.1, 8, 8);
-            for(let i=0; i<100; i++) {
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const mat = new THREE.MeshStandardMaterial({color: color});
-                const mesh = new THREE.Mesh(sprinkleGeo, mat);
-                
-                const layer = Math.floor(Math.random() * 3);
-                const radii = [7.5, 5.5, 4];
-                const heights = [3, 5.5, 7.5];
-                
-                const angle = Math.random() * Math.PI * 2;
-                const r = Math.random() * (radii[layer] - 0.2);
-                mesh.position.set(Math.cos(angle)*r, heights[layer], Math.sin(angle)*r);
-                cakeGroup.add(mesh);
-            }
-
-            // 巧克力牌 "22"
-            const plaqueCanvas = document.createElement('canvas');
-            plaqueCanvas.width = 256; plaqueCanvas.height = 128;
-            const pctx = plaqueCanvas.getContext('2d');
-            pctx.fillStyle = '#5c3a21'; 
-            pctx.fillRoundRect = function(x,y,w,h,r) {
-                this.beginPath(); this.moveTo(x+r,y); this.lineTo(x+w-r,y); this.quadraticCurveTo(x+w,y,x+w,y+r);
-                this.lineTo(x+w,y+h-r); this.quadraticCurveTo(x+w,y+h,x+w-r,y+h); this.lineTo(x+r,y+h);
-                this.quadraticCurveTo(x,y+h,x,y+h-r); this.lineTo(x,y+r); this.quadraticCurveTo(x,y,x+r,y); this.fill();
-            }
-            pctx.fillRoundRect(0,0,256,128,20);
-            pctx.fillStyle = '#fff';
-            pctx.font = 'bold 80px Arial';
-            pctx.textAlign = 'center';
-            pctx.textBaseline = 'middle';
-            pctx.fillText('22', 128, 64);
+            const decoTex = createDecoTexture();
+            const matBase = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, map: decoTex, roughness: 0.5, transparent: true });
+            const matMid = new THREE.MeshStandardMaterial({ color: 0x4a0e17, roughness: 0.6, transparent: true }); 
+            const matTop = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.8, roughness: 0.2, transparent: true }); 
+            const matStand = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.5, roughness: 0.5, transparent: true });
             
-            const plaqueTex = new THREE.CanvasTexture(plaqueCanvas);
-            const plaqueGeo = new THREE.BoxGeometry(2.5, 1.2, 0.2);
-            const plaqueMat = new THREE.MeshStandardMaterial({ map: plaqueTex });
-            const plaque = new THREE.Mesh(plaqueGeo, plaqueMat);
-            plaque.position.set(0, 7.5, 2.5); 
-            plaque.rotation.x = -Math.PI / 8; 
-            cakeGroup.add(plaque);
+            cakeMaterials.push(matBase, matMid, matTop, matStand);
+
+            const stand = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 9, 0.5, 64), matStand);
+            stand.position.y = -0.25; stand.receiveShadow = true; cakeGroup.add(stand);
+
+            const layer1 = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 7.5, 3, 64), matBase);
+            layer1.position.y = 1.5; layer1.castShadow = true; layer1.receiveShadow = true; cakeGroup.add(layer1);
+
+            const layer2 = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 5.5, 2.5, 64), matMid);
+            layer2.position.y = 4.25; layer2.castShadow = true; layer2.receiveShadow = true; cakeGroup.add(layer2);
+
+            const layer3 = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 2, 64), matTop);
+            layer3.position.y = 6.5; layer3.castShadow = true; layer3.receiveShadow = true; cakeGroup.add(layer3);
+
+            const pearlGeo = new THREE.SphereGeometry(0.2, 16, 16);
+            const pearlMat = new THREE.MeshStandardMaterial({ color: 0xfffdd0, roughness: 0.1, metalness: 0.1, transparent: true });
+            cakeMaterials.push(pearlMat);
+            [ {r: 7.5, y: 3}, {r: 5.5, y: 5.5}, {r: 4, y: 7.5} ].forEach(tier => {
+                const count = Math.floor(tier.r * 2 * Math.PI / 0.4);
+                for(let i=0; i<count; i++) {
+                    const angle = (i / count) * Math.PI * 2;
+                    const pearl = new THREE.Mesh(pearlGeo, pearlMat);
+                    pearl.position.set(Math.cos(angle)*tier.r, tier.y, Math.sin(angle)*tier.r); cakeGroup.add(pearl);
+                }
+            });
+
+            const plaqueCanvas = document.createElement('canvas'); plaqueCanvas.width = 256; plaqueCanvas.height = 128; 
+            const pctx = plaqueCanvas.getContext('2d');
+            pctx.fillStyle = '#1a1a1a'; pctx.fillRect(0,0,256,128);
+            pctx.strokeStyle = '#D4AF37'; pctx.lineWidth = 10; pctx.strokeRect(5,5,246,118);
+            pctx.fillStyle = '#D4AF37'; pctx.font = 'bold 80px Georgia'; pctx.textAlign = 'center'; pctx.textBaseline = 'middle';
+            pctx.fillText('22', 128, 64);
+            const plaqueMat = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(plaqueCanvas), transparent: true });
+            cakeMaterials.push(plaqueMat);
+            const plaque = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.2, 0.2), plaqueMat);
+            plaque.position.set(0, 7.8, 2.5); plaque.rotation.x = -Math.PI / 8; cakeGroup.add(plaque);
 
             scene.add(cakeGroup);
         }
 
-        // 生成火焰和烟雾纹理
         function createFlameTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64; canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.2, 'rgba(255, 200, 0, 1)');
-            grad.addColorStop(0.5, 'rgba(255, 50, 0, 0.6)');
-            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, 64, 64);
-            return new THREE.CanvasTexture(canvas);
+            const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d'); const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)'); grad.addColorStop(0.3, 'rgba(255, 215, 0, 1)'); 
+            grad.addColorStop(0.6, 'rgba(255, 69, 0, 0.5)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(canvas);
         }
         function createSmokeTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 32; canvas.height = 32;
-            const ctx = canvas.getContext('2d');
-            const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, 32, 32);
-            return new THREE.CanvasTexture(canvas);
+            const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d'); const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            grad.addColorStop(0, 'rgba(200, 200, 200, 0.8)'); grad.addColorStop(1, 'rgba(200, 200, 200, 0)');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(canvas);
         }
-        const flameTex = createFlameTexture();
-        const smokeTex = createSmokeTexture();
+        const flameTex = createFlameTexture(); const smokeTex = createSmokeTexture();
 
-        // 构建22根蜡烛
         function buildCandles() {
-            const candleGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 16);
-            const candleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
-            const wickGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.2, 8);
-            const wickMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const candleMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.4, transparent: true });
+            cakeMaterials.push(candleMat); 
             const flameMat = new THREE.SpriteMaterial({ map: flameTex, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending });
 
-            const total = 22, outerCount = 14, innerCount = 8;
-            const outerRadius = 3.2, innerRadius = 1.6;
-
-            for(let i=0; i<total; i++) {
+            for(let i=0; i<22; i++) {
                 const group = new THREE.Group();
-                const body = new THREE.Mesh(candleGeo, candleMat);
-                body.position.y = 0.75; body.castShadow = true;
-                group.add(body);
-
-                const wick = new THREE.Mesh(wickGeo, wickMat);
-                wick.position.y = 1.6;
-                group.add(wick);
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.5, 16), candleMat);
+                body.position.y = 0.75; group.add(body);
 
                 const flame = new THREE.Sprite(flameMat.clone());
-                flame.position.y = 1.8; flame.scale.set(0.6, 0.8, 1);
-                group.add(flame);
+                flame.position.y = 1.8; flame.scale.set(0.7, 0.9, 1); group.add(flame);
 
                 const div = document.createElement('div');
                 div.className = 'candle-label'; div.textContent = i + 1;
-                const label = new THREE.CSS2DObject(div);
-                label.position.set(0, 2.2, 0);
-                group.add(label);
+                const label = new THREE.CSS2DObject(div); label.position.set(0, 2.2, 0); group.add(label);
 
                 let angle, r;
-                if(i < outerCount) { angle = (i / outerCount) * Math.PI * 2; r = outerRadius; } 
-                else { angle = ((i - outerCount) / innerCount) * Math.PI * 2 + 0.5; r = innerRadius; }
-                
+                if(i < 14) { angle = (i / 14) * Math.PI * 2; r = 3.2; } else { angle = ((i - 14) / 8) * Math.PI * 2 + 0.5; r = 1.6; }
                 group.position.set(Math.cos(angle)*r, 7.5, Math.sin(angle)*r);
-                body.userData = { id: i, parentGroup: group }; // 绑定交互ID
-                scene.add(group);
-
-                candles.push({ id: i, mesh: body, flame: flame, isLit: true, group: group });
+                body.userData = { id: i, parentGroup: group }; scene.add(group);
+                candles.push({ id: i, mesh: body, flame: flame, isLit: true, group: group, label: label });
             }
         }
 
-        // ================= 交互逻辑：点击与吹灭 =================
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
+        function createBackgroundDust() {
+            const geo = new THREE.BufferGeometry(); const count = 500; const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) pos[i] = (Math.random() - 0.5) * 100;
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ size: 0.3, color: 0xD4AF37, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+            scene.add(new THREE.Points(geo, mat));
+        }
+
+        // ================= 粒子互动系统 =================
+        function initMagicParticles() {
+            const count = 1500; const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3); const colors = new Float32Array(count * 3);
+            const colorBase = new THREE.Color(0xD4AF37); const colorAlt = new THREE.Color(0xffcfcf);
+
+            for (let i = 0; i < count; i++) {
+                const theta = Math.random() * Math.PI * 2; const r = 2 + Math.random() * 8; const y = Math.random() * 12;
+                const px = Math.cos(theta) * r; const py = y; const pz = Math.sin(theta) * r;
+                positions[i*3] = px; positions[i*3+1] = py; positions[i*3+2] = pz;
+                const c = Math.random() > 0.5 ? colorBase : colorAlt;
+                colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+
+                particleData.push({ baseX: px, baseY: py, baseZ: pz, curX: px, curY: py, curZ: pz, tgtX: px, tgtY: py, tgtZ: pz, angle: theta, radius: r, speed: 0.01 + Math.random()*0.02 });
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            const mat = new THREE.PointsMaterial({ size: 0.4, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+            magicParticles = new THREE.Points(geometry, mat); scene.add(magicParticles);
+        }
+
+        function triggerExplode() {
+            if(isExploded) return;
+            isExploded = true; targetCakeOpacity = 0.05; 
+            document.getElementById('bg-container').style.background = "radial-gradient(circle at center, #4a0e17 0%, #050505 80%, #000000 100%)";
+            candles.forEach(c => c.label.element.style.opacity = '0.05');
+            document.getElementById('btn-photo').style.display = 'inline-block'; 
+
+            particleData.forEach(p => {
+                p.tgtX = p.baseX * (2.5 + Math.random() * 3);
+                p.tgtY = p.baseY + (Math.random() - 0.5) * 20;
+                p.tgtZ = p.baseZ * (2.5 + Math.random() * 3);
+            });
+            showToast("✨ 时光漫游开启 (捏合手势翻看回忆) ✨");
+        }
+
+        function triggerImplode() {
+            if(!isExploded) return;
+            isExploded = false; targetCakeOpacity = 1.0; 
+            document.getElementById('bg-container').style.background = "radial-gradient(circle at center, #2a2015 0%, #050505 80%, #000000 100%)";
+            candles.forEach(c => c.label.element.style.opacity = '1');
+            document.getElementById('btn-photo').style.display = 'none';
+            
+            hidePhoto();
+
+            particleData.forEach(p => { p.tgtX = p.baseX; p.tgtY = p.baseY; p.tgtZ = p.baseZ; });
+            showToast("⏳ 实体复原 ⏳");
+        }
+
+        function triggerNextPhoto() {
+            const viewer = document.getElementById('photo-viewer');
+            const textEl = document.getElementById('p-text');
+            const imgEl = document.getElementById('p-img');
+
+            viewer.classList.remove('active');
+            setTimeout(() => {
+                const content = photoList[currentPhotoIndex];
+                if (content.startsWith('http') || content.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                    imgEl.src = content; imgEl.style.display = 'block'; textEl.style.display = 'none';
+                } else {
+                    textEl.innerHTML = content; textEl.style.display = 'block'; imgEl.style.display = 'none';
+                }
+                viewer.classList.add('active');
+                currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
+            }, 100); 
+        }
+
+        function hidePhoto() {
+            document.getElementById('photo-viewer').classList.remove('active');
+            currentPhotoIndex = 0;
+        }
+
+        // ================= 基础交互 & 点击特效 =================
+        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+        let toastTimeout;
+        function showToast(msg) {
+            toastEl.innerText = msg; toastEl.style.opacity = '1'; toastEl.style.top = '25%';
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toastEl.style.opacity = '0'; toastEl.style.top = '20%'; }, 3000);
+        }
+
+        function spawnPartyItems(x, y) {
+            const items = ['🎈', '🎈', '🎈', '🎉', '🥳', '🎊', '🎁']; 
+            const count = 6 + Math.floor(Math.random() * 5); // 每次出现 6-10 个
+            
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'party-item';
+                el.innerText = items[Math.floor(Math.random() * items.length)];
+                
+                // 随机散开距离
+                const offsetX = (Math.random() - 0.5) * 200;
+                const offsetY = (Math.random() - 0.5) * 200;
+                
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                // 通过 CSS 变量传递动画最终位置和旋转角度
+                el.style.setProperty('--tx', `${offsetX}px`);
+                el.style.setProperty('--ty', `${offsetY - 150 - Math.random() * 150}px`);
+                el.style.setProperty('--rot', `${(Math.random() - 0.5) * 60}deg`);
+                
+                el.style.fontSize = (1.8 + Math.random() * 1.5) + 'rem';
+                el.style.animationDuration = (1.5 + Math.random()) + 's';
+                
+                document.body.appendChild(el);
+                
+                // 动画结束后移除节点
+                setTimeout(() => {
+                    if(el.parentNode) el.parentNode.removeChild(el);
+                }, 3000);
+            }
+        }
 
         function onPointerDown(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            // 计算鼠标射线
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1; 
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(candles.map(c => c.mesh));
-
+            
             if(intersects.length > 0) {
+                // 如果点击到了蜡烛，执行点灭逻辑
                 extinguishCandle(intersects[0].object.userData.id);
+            } else {
+                // 如果没有点击到蜡烛（即点击了空白处），释放气球彩花特效
+                const fx = event.clientX / window.innerWidth;
+                const fy = event.clientY / window.innerHeight;
+                
+                // 1. 散落的原版纸屑彩花
+                confetti({
+                    particleCount: 50, spread: 90, origin: { x: fx, y: fy },
+                    colors: ['#D4AF37', '#FFD700', '#B76E79', '#F7E7CE', '#ff4d4d', '#4da6ff'], 
+                    zIndex: 9999
+                });
+
+                // 2. 向上浮动的气球、生日帽、手拧彩花筒
+                spawnPartyItems(event.clientX, event.clientY);
             }
         }
 
         function extinguishCandle(id) {
-            const candle = candles[id];
-            showToast(BLESSINGS[id]);
+            const candle = candles[id]; 
             if(!candle.isLit) return;
-            candle.isLit = false;
-            candle.flame.visible = false;
-            spawnSmoke(candle.group.position);
+            candle.isLit = false; candle.flame.visible = false; 
+            showToast(BLESSINGS[id]);
+            spawnSmoke(candle.group.position); 
+            manuallyExtinguishedCount++; // 记录手动点击的数量
             checkWin();
         }
 
         function spawnSmoke(pos) {
             const mat = new THREE.SpriteMaterial({ map: smokeTex, color: 0xffffff, transparent: true, opacity: 0.8 });
             for(let i=0; i<3; i++) {
-                const sprite = new THREE.Sprite(mat);
-                sprite.position.copy(pos); sprite.position.y += 1.8; 
-                sprite.userData = { vx: (Math.random() - 0.5) * 0.02, vy: 0.02 + Math.random() * 0.02, vz: (Math.random() - 0.5) * 0.02, life: 1.0 };
+                const sprite = new THREE.Sprite(mat); sprite.position.copy(pos); sprite.position.y += 1.8; 
+                sprite.userData = { vx: (Math.random()-0.5)*0.02, vy: 0.02+Math.random()*0.02, vz: (Math.random()-0.5)*0.02, life: 1.0 };
                 scene.add(sprite); smokeParticles.push(sprite);
             }
         }
 
-        function updateSmoke() {
-            for(let i = smokeParticles.length - 1; i >= 0; i--) {
-                let p = smokeParticles[i];
-                p.position.x += p.userData.vx; p.position.y += p.userData.vy; p.position.z += p.userData.vz;
-                p.userData.life -= 0.01; p.material.opacity = p.userData.life;
-                p.scale.setScalar(1 + (1 - p.userData.life) * 2);
-                if(p.userData.life <= 0) { scene.remove(p); smokeParticles.splice(i, 1); }
-            }
-        }
-
-        // 吹气按钮逻辑
-        blowBtn.addEventListener('click', () => {
-            if(candles.every(c => !c.isLit)) return showToast("蜡烛已经全都熄灭啦！");
-            isBlowing = true; blowBtn.style.pointerEvents = 'none'; 
-            
-            setTimeout(() => {
-                isBlowing = false;
-                candles.forEach(c => {
-                    if(c.isLit) { c.isLit = false; c.flame.visible = false; spawnSmoke(c.group.position); }
-                });
-                showToast("哇！乐乐一口气吹灭了所有蜡烛！生日快乐！");
-                setTimeout(triggerConfetti, 500);
-                blowBtn.style.display = 'none'; 
-            }, 800);
-        });
-
         function checkWin() {
-            if(candles.every(c => !c.isLit)) {
-                setTimeout(() => { showToast("蜡烛全部吹灭啦！祝乐乐岁岁平安！"); triggerConfetti(); blowBtn.style.display = 'none'; }, 500);
+            if(candles.every(c => !c.isLit)) { 
+                // 功能3：隐藏彩蛋检测（22根全被手动点灭）
+                if(manuallyExtinguishedCount === 22) {
+                    setTimeout(() => { showEasterEgg(); triggerConfetti(); }, 500);
+                } else {
+                    setTimeout(() => { showToast("22岁生日快乐！"); triggerConfetti(); }, 500); 
+                }
             }
         }
 
-        // 庆祝烟花特效
         function triggerConfetti() {
             const duration = 3000, end = Date.now() + duration;
             (function frame() {
-                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ffb6c1', '#add8e6', '#ffffff', '#ffaa00'] });
-                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ffb6c1', '#add8e6', '#ffffff', '#ffaa00'] });
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#D4AF37', '#FFD700', '#ffffff', '#800020'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#D4AF37', '#FFD700', '#ffffff', '#800020'] });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
         }
 
-        // ================= 渲染循环 =================
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('music-btn').addEventListener('click', function() {
+            if(audio.paused) { audio.play(); this.classList.add('playing'); this.innerHTML='🎵'; } 
+            else { audio.pause(); this.classList.remove('playing'); this.innerHTML='🔇'; }
+        });
+
+        // ================= 麦克风吹气识别 =================
+        async function initMic() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                analyser.smoothingTimeConstant = 0.5; 
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            } catch (err) {
+                console.warn("麦克风权限被拒绝或不支持", err);
+                showToast("无法使用麦克风吹气功能，请手动点击蜡烛许愿");
+            }
         }
 
+        function updateMicVolume() {
+            if (!analyser || candles.every(c => !c.isLit)) return;
+            analyser.getByteFrequencyData(dataArray);
+            
+            // 吹风的声音主要集中在中低频段，计算这部分能量
+            let sum = 0;
+            for(let i = 2; i < 20; i++) { sum += dataArray[i]; }
+            let avg = sum / 18;
+
+            // 阈值设定，大于这个值被认为是吹气
+            if (avg > 110) {
+                if (blowStartTime === 0) { blowStartTime = Date.now(); }
+                else if (Date.now() - blowStartTime > 300) { // 持续0.3秒
+                    triggerMicBlow();
+                    blowStartTime = 0; 
+                }
+            } else {
+                blowStartTime = 0; 
+            }
+        }
+
+        function triggerMicBlow() {
+            if(isBlowing) return;
+            isBlowing = true; // 触发蜡烛火焰摇晃特效
+            
+            setTimeout(() => {
+                let litCount = 0;
+                candles.forEach(c => {
+                    if (c.isLit) { 
+                        c.isLit = false; c.flame.visible = false; 
+                        spawnSmoke(c.group.position); 
+                        litCount++;
+                    }
+                });
+                isBlowing = false;
+                if(litCount > 0) {
+                    showToast("呼~~~ 乐乐一口气吹灭了所有蜡烛！愿望成真！");
+                    setTimeout(triggerConfetti, 500);
+                    // 注意：因为是被吹灭的，所以不会增加 manuallyExtinguishedCount，不会触发手动点击的隐藏彩蛋。
+                }
+            }, 800);
+        }
+
+        // ================= 隐藏彩蛋 =================
+        function play8BitSound() {
+            if(!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.type = 'square';
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            // 经典复古 8-bit 上升音效
+            osc.frequency.setValueAtTime(440, now); 
+            osc.frequency.setValueAtTime(554.37, now + 0.1); 
+            osc.frequency.setValueAtTime(659.25, now + 0.2); 
+            osc.frequency.setValueAtTime(880, now + 0.3); 
+            
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            
+            osc.start(now); osc.stop(now + 0.6);
+        }
+
+        function showEasterEgg() {
+            play8BitSound();
+            
+            // 创建礼物盒模型
+            easterEggGroup = new THREE.Group();
+            const boxGeo = new THREE.BoxGeometry(2.5, 2.5, 2.5);
+            const boxMat = new THREE.MeshStandardMaterial({color: 0xaa0000, metalness: 0.3, roughness: 0.6});
+            const box = new THREE.Mesh(boxGeo, boxMat);
+            
+            const ribbonGeo = new THREE.BoxGeometry(2.6, 2.6, 0.3);
+            const ribbonMat = new THREE.MeshStandardMaterial({color: 0xFFD700});
+            const ribbon1 = new THREE.Mesh(ribbonGeo, ribbonMat);
+            const ribbon2 = new THREE.Mesh(ribbonGeo, ribbonMat);
+            ribbon2.rotation.y = Math.PI / 2;
+            
+            easterEggGroup.add(box, ribbon1, ribbon2);
+            easterEggGroup.position.set(0, 4, 0); // 初始藏在蛋糕里
+            scene.add(easterEggGroup);
+
+            // 创建文字标签
+            const div = document.createElement('div');
+            div.style.color = '#FFD700'; div.style.background = 'rgba(0,0,0,0.8)';
+            div.style.padding = '15px 25px'; div.style.border = '2px solid #D4AF37';
+            div.style.borderRadius = '10px'; div.style.fontSize = '1.8rem';
+            div.style.textShadow = '0 0 10px #FFD700'; div.style.fontFamily = 'monospace';
+            div.style.whiteSpace = 'nowrap';
+            div.innerHTML = '🎁 公布礼物：复古游戏掌机 🎮';
+            const label = new THREE.CSS2DObject(div);
+            label.position.set(0, 3, 0);
+            easterEggGroup.add(label);
+
+            easterEggGroup.userData = { targetY: 10, moving: true };
+
+            // 生成像素粒子
+            spawnPixelParticles(new THREE.Vector3(0, 9, 0));
+        }
+
+        function spawnPixelParticles(origin) {
+            const geo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+            const colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF];
+            for(let i=0; i<80; i++) {
+                const mat = new THREE.MeshBasicMaterial({color: colors[Math.floor(Math.random()*colors.length)]});
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.copy(origin);
+                mesh.position.x += (Math.random()-0.5)*3;
+                mesh.position.z += (Math.random()-0.5)*3;
+                mesh.userData = {
+                    vx: (Math.random()-0.5)*0.15, vy: Math.random()*0.15 + 0.1, vz: (Math.random()-0.5)*0.15,
+                    rotX: Math.random()*0.2, rotY: Math.random()*0.2
+                };
+                scene.add(mesh); pixelParticles.push(mesh);
+            }
+        }
+
+
+        // ================= 摄像头与手势识别 (MediaPipe) =================
+        const videoElement = document.getElementById('webcam-video');
+        const canvasElement = document.getElementById('webcam-canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const statusEl = document.getElementById('cam-status');
+        
+        document.getElementById('btn-explode').addEventListener('click', triggerExplode);
+        document.getElementById('btn-implode').addEventListener('click', triggerImplode);
+        document.getElementById('btn-photo').addEventListener('click', triggerNextPhoto);
+
+        let lastGesture = null;
+        let gestureTimer = 0;
+
+        function initHandTracking() {
+            document.getElementById('webcam-container').style.display = 'block';
+
+            const hands = new Hands({locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }});
+
+            hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+            hands.onResults(onHandResults);
+
+            const cameraUtils = new Camera(videoElement, { onFrame: async () => { await hands.send({image: videoElement}); }, width: 320, height: 240 });
+
+            cameraUtils.start().then(() => { statusEl.innerText = "摄像头就绪"; })
+            .catch(err => {
+                console.warn("无法启动摄像头", err);
+                document.getElementById('webcam-container').style.display = 'none';
+                document.getElementById('fallback-controls').style.display = 'flex';
+            });
+        }
+
+        function onHandResults(results) {
+            canvasElement.width = videoElement.videoWidth; canvasElement.height = videoElement.videoHeight;
+            canvasCtx.save(); canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#D4AF37', lineWidth: 2});
+                drawLandmarks(canvasCtx, landmarks, {color: '#FFD700', lineWidth: 1, radius: 2});
+
+                const wrist = landmarks[0];
+                const fingers = [ [5,8], [9,12], [13,16], [17,20] ]; 
+                let extendedCount = 0;
+                for(let [mcp, tip] of fingers) {
+                    const distTip = Math.hypot(landmarks[tip].x - wrist.x, landmarks[tip].y - wrist.y);
+                    const distMcp = Math.hypot(landmarks[mcp].x - wrist.x, landmarks[mcp].y - wrist.y);
+                    if(distTip > distMcp * 1.2) extendedCount++;
+                }
+
+                const thumbTip = landmarks[4]; const thumbMcp = landmarks[2];
+                const distThumbTip = Math.hypot(thumbTip.x - wrist.x, thumbTip.y - wrist.y);
+                const distThumbMcp = Math.hypot(thumbMcp.x - wrist.x, thumbMcp.y - wrist.y);
+                if(distThumbTip > distThumbMcp * 1.1) extendedCount++;
+
+                let currentGesture = 'unknown';
+                if(extendedCount >= 4) currentGesture = 'open';
+                else if(extendedCount <= 1) currentGesture = 'fist';
+
+                const indexTip = landmarks[8];
+                const pinchDist = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y, thumbTip.z - indexTip.z);
+                const isPinch = pinchDist < 0.06;
+
+                const now = Date.now();
+
+                if(currentGesture === 'open' && lastGesture !== 'open' && (now - gestureTimer > 1000) && !isPinch) {
+                    triggerExplode(); lastGesture = 'open'; gestureTimer = now; statusEl.innerText = "🖐️ 张开";
+                } 
+                else if(currentGesture === 'fist' && lastGesture !== 'fist' && (now - gestureTimer > 1000)) {
+                    triggerImplode(); lastGesture = 'fist'; gestureTimer = now; statusEl.innerText = "✊ 握拳";
+                }
+                else if(isExploded && isPinch && (now - pinchTimer > 1000)) {
+                    triggerNextPhoto(); pinchTimer = now; lastGesture = 'pinch'; statusEl.innerText = "🤏 捏合";
+                }
+
+            } else {
+                statusEl.innerText = "未检测到手";
+            }
+            canvasCtx.restore();
+        }
+
+        // ================= 渲染循环 =================
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
             controls.update();
+            updateMicVolume(); // 每帧检测麦克风音量
 
-            // 背景星星缓慢旋转
-            if(starParticles) starParticles.rotation.y += 0.0005;
+            if(Math.abs(currentCakeOpacity - targetCakeOpacity) > 0.01) {
+                currentCakeOpacity += (targetCakeOpacity - currentCakeOpacity) * 0.05;
+                cakeMaterials.forEach(m => { m.opacity = currentCakeOpacity; });
+            }
 
-            // 火焰动画
+            if(magicParticles) {
+                const positions = magicParticles.geometry.attributes.position.array;
+                for(let i=0; i<particleData.length; i++) {
+                    let p = particleData[i];
+                    p.curX += (p.tgtX - p.curX) * 0.05; p.curY += (p.tgtY - p.curY) * 0.05; p.curZ += (p.tgtZ - p.curZ) * 0.05;
+                    if(!isExploded) {
+                        p.angle += p.speed * 0.1; p.tgtX = Math.cos(p.angle) * p.radius; p.tgtZ = Math.sin(p.angle) * p.radius;
+                    } else { p.tgtY += Math.sin(time*2 + i) * 0.02; }
+                    positions[i*3] = p.curX; positions[i*3+1] = p.curY; positions[i*3+2] = p.curZ;
+                }
+                magicParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
             candles.forEach(c => {
                 if(c.isLit) {
                     let scaleXY = 0.6 + Math.sin(time * 10 + c.id) * 0.05;
-                    if(isBlowing) { scaleXY -= 0.2; c.flame.position.x = Math.sin(time * 50 + c.id) * 0.1; } 
-                    else { c.flame.position.x = 0; }
-                    c.flame.scale.set(scaleXY, 0.8 + Math.random()*0.1, 1);
+                    if(isBlowing) { scaleXY -= 0.2; c.flame.position.x = Math.sin(time * 50 + c.id) * 0.2; } // 剧烈摇晃
+                    else c.flame.position.x = 0;
+                    c.flame.scale.set(scaleXY, 0.9 + Math.random()*0.1, 1);
                 }
             });
 
-            updateSmoke();
+            for(let i = smokeParticles.length - 1; i >= 0; i--) {
+                let p = smokeParticles[i];
+                p.position.x += p.userData.vx; p.position.y += p.userData.vy; p.position.z += p.userData.vz;
+                p.userData.life -= 0.01; p.material.opacity = p.userData.life; p.scale.setScalar(1 + (1 - p.userData.life) * 2);
+                if(p.userData.life <= 0) { scene.remove(p); smokeParticles.splice(i, 1); }
+            }
+
+            // 彩蛋动画：礼物盒上升与自转
+            if(easterEggGroup && easterEggGroup.userData.moving) {
+                easterEggGroup.position.y += (easterEggGroup.userData.targetY - easterEggGroup.position.y) * 0.03;
+                easterEggGroup.rotation.y += 0.01;
+            }
+
+            // 彩蛋动画：像素粒子掉落
+            for(let i=pixelParticles.length-1; i>=0; i--) {
+                let p = pixelParticles[i];
+                p.position.x += p.userData.vx;
+                p.position.y += p.userData.vy;
+                p.position.z += p.userData.vz;
+                p.userData.vy -= 0.005; // 物理重力
+                p.rotation.x += p.userData.rotX;
+                p.rotation.y += p.userData.rotY;
+                if(p.position.y < -5) { scene.remove(p); pixelParticles.splice(i, 1); }
+            }
+
             renderer.render(scene, camera);
             labelRenderer.render(scene, camera);
         }
-
     </script>
 </body>
 </html>
